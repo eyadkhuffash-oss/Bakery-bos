@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>شاشة التعبئة — نظام المخبز</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body{background:#fffaf4;}
+    .wrap{max-width:1000px;margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:14px;}
+    .top{display:flex;justify-content:space-between;align-items:center;padding:14px 16px;background:#fff;border-radius:16px;box-shadow:0 6px 20px rgba(43,33,24,0.08);} 
+    .top h1{margin:0;font-size:20px;color:#C8553D;} .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:14px;}
+    .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(43,33,24,0.08);} .order{display:flex;flex-direction:column;gap:8px;padding:12px 0;border-bottom:1px solid #eee;} .order:last-child{border-bottom:none;} .muted{color:#7b6d5c;font-size:13px;}
+    .chip{display:inline-block;padding:4px 8px;border-radius:999px;font-size:12px;font-weight:bold;background:#f8e7d2;color:#7b4d20;} .btn{padding:8px 12px;font-size:13px;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top">
+      <h1>📦 شاشة التعبئة والتوصيل</h1>
+      <a class="btn btn-ghost" href="roles.html">العودة</a>
+    </div>
+    <div class="cards" id="packagingList"></div>
+  </div>
+  <script>
+    async function loadOrders(){
+      const res = await fetch('/api/orders/active');
+      const orders = await res.json();
+      const list = document.getElementById('packagingList');
+      list.innerHTML = '';
+      // المعبّي: يظهر فقط طلبات جاهزة للتغليف (status='packaging') أو التوصيل.
+      // بعد ما نضغط "تم التغليف" سيتم نقل الحالة إلى 'packaging'، فيختفي من هذه الصفحة.
+      const ready = orders.filter(o => o.status === 'packaging' || o.delivery_enabled);
+
+      if (!ready.length) { list.innerHTML = '<div class=card><strong>لا توجد طلبات جاهزة حالياً</strong></div>'; return; }
+      ready.forEach(order => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+            <strong>طلبية #${order.order_number}</strong>
+            <span class="chip">${order.delivery_enabled ? 'توصيل' : 'استلام'}</span>
+          </div>
+          <div class="muted">العميل: ${order.customer_name || 'عميل عام'}</div>
+          <div>${(order.items || []).map(item => `<div>• ${item.product_name} × ${item.quantity}</div>`).join('')}</div>
+          <div class="muted">العنوان: ${order.delivery_address || '—'}</div>
+          <div class="muted">الملاحظات: ${order.delivery_notes || order.notes || 'لا توجد'}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:8px;">
+            <span><strong>${Number(order.total || 0).toFixed(2)} ₪</strong></span>
+            <button class="btn btn-primary" onclick="markPacked(${order.id})">تم التغليف</button>
+          </div>`;
+        list.appendChild(card);
+      });
+    }
+    async function markPacked(id){
+      // تم التغليف => اعتبرها جاهزة للإرسال/التسليم (وتخفي من شاشة التعبئة)
+      await fetch(`/api/orders/${id}/status`, {method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({status:'delivered'})});
+      loadOrders();
+    }
+
+    loadOrders();
+  </script>
+</body>
+</html>

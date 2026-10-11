@@ -1,0 +1,73 @@
+/* ============== نظام التصميم المشترك ==============
+   لوحة الألوان: أبيض دقيق دافئ + قرمزي طوب الفرن + أخضر زعتر + كرمل غامق
+   خط: Tahoma / Segoe UI (متوفرة بدون إنترنت وتدعم العربية بشكل جيد)
+*/
+:root{
+  --flour:#FAF6EE;
+  --flour-deep:#F0E9D8;
+  --crust:#2B2118;
+  --crust-soft:#5B4636;
+  --oven-red:#C8553D;
+  --oven-red-deep:#A8432E;
+  --zaatar:#5B7B5A;
+  --zaatar-deep:#456144;
+  --amber:#E8A33D;
+  --line:#E2D9C4;
+  --white:#FFFFFF;
+  --danger:#C0392B;
+  --shadow: 0 2px 10px rgba(43,33,24,0.10);
+  --shadow-lg: 0 8px 28px rgba(43,33,24,0.18);
+  --radius:14px;
+}
+
+*{box-sizing:border-box;}
+html,body{
+  margin:0; padding:0; height:100%;
+  font-family:'Tahoma','Segoe UI',Arial,sans-serif;
+  background:var(--flour);
+  color:var(--crust);
+  direction:rtl;
+  -webkit-tap-highlight-color: transparent;
+  user-select:none;
+}
+button{font-family:inherit; cursor:pointer; border:none;}
+input{font-family:inherit;}
+
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-thumb{background:var(--line); border-radius:8px;}
+
+.topbar{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 22px; background:var(--white); border-bottom:2px solid var(--line);
+  box-shadow:var(--shadow);
+}
+.topbar h1{ font-size:20px; margin:0; color:var(--oven-red-deep); display:flex; align-items:center; gap:8px;}
+.topbar .clock{ font-size:15px; color:var(--crust-soft); font-weight:bold;}
+.pill{
+  display:inline-flex; align-items:center; gap:6px;
+  background:var(--flour-deep); border-radius:999px; padding:6px 14px; font-size:14px; font-weight:bold;
+}
+.btn{
+  border-radius:10px; padding:10px 18px; font-size:15px; font-weight:bold;
+  transition:transform .08s ease, box-shadow .15s ease; box-shadow:var(--shadow);
+}
+.btn:active{ transform:scale(.96); }
+.btn-primary{ background:var(--oven-red); color:var(--white); }
+.btn-primary:hover{ background:var(--oven-red-deep); }
+.btn-secondary{ background:var(--zaatar); color:var(--white); }
+.btn-ghost{ background:var(--white); color:var(--crust); border:1.5px solid var(--line); }
+.btn-danger{ background:var(--danger); color:var(--white); }
+.btn:disabled{ opacity:.45; cursor:not-allowed; transform:none; }
+
+a{ color:var(--oven-red-deep); text-decoration:none; }
+
+.toast-wrap{
+  position:fixed; top:18px; left:50%; transform:translateX(-50%);
+  z-index:999; display:flex; flex-direction:column; gap:8px; align-items:center;
+}
+.toast{
+  background:var(--crust); color:var(--white); padding:10px 22px; border-radius:999px;
+  font-size:14px; font-weight:bold; box-shadow:var(--shadow-lg);
+  animation: toast-in .25s ease;
+}
+@keyframes toast-in{ from{opacity:0; transform:translateY(-12px);} to{opacity:1; transform:translateY(0);} }

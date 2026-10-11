@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>أدوار العاملين — نظام المخبز</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body{padding:0;}
+    .role-shell{max-width:1100px;margin:0 auto;padding:24px 16px 48px;display:grid;gap:16px;}
+    .hero{background:linear-gradient(135deg,#C8553D,#E8A33D);color:#fff;border-radius:20px;padding:24px;box-shadow:0 10px 30px rgba(0,0,0,.15);} 
+    .hero h1{margin:0 0 8px;font-size:24px;} .hero p{margin:0;opacity:.95;}
+    .grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;}
+    .card{background:#fff;border-radius:16px;padding:18px;box-shadow:0 6px 22px rgba(43,33,24,0.08);display:flex;flex-direction:column;gap:12px;}
+    .card h2{margin:0;font-size:18px;color:#2B2118;} .card p{margin:0;color:#5B4636;line-height:1.6;font-size:14px;} .card a{margin-top:auto;}
+    @media (max-width: 920px){.grid{grid-template-columns:1fr 1fr;}} @media (max-width: 560px){.grid{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <div class="role-shell">
+    <div class="hero">
+      <h1>🍞 نظام خباز حديث ومحمول</h1>
+      <p>واجهة مخصصة لكل دور مع أسرع مسار لإتمام الطلبات، متابعة الديون، المخزون، والتقارير.</p>
+    </div>
+    <div class="grid">
+      <div class="card">
+        <h2>🧾 الكاشير</h2>
+        <p>إنشاء الطلبات، إدارة الدفع، متابعة الديون ورسوم التوصيل بسرعة من الهاتف.</p>
+        <button class="btn btn-primary" onclick="selectRole('cashier')">فتح الكاشير 🚪</button>
+      </div>
+      <div class="card">
+        <h2>🔥 الخباز</h2>
+        <p>عرض الطلبات الواردة بوضوح، مكونات الإنتاج والكمية وملاحظات خاصة.</p>
+        <button class="btn btn-secondary" onclick="selectRole('baker')">فتح شاشة الخباز 🚪</button>
+      </div>
+      <div class="card">
+        <h2>📦 التعبئة والتوصيل</h2>
+        <p>مراجعة الطلبات الجاهزة للتغليف والتوصيل مع تتبع الحالة والموظف.</p>
+        <button class="btn btn-ghost" onclick="selectRole('packer')">فتح شاشة التعبئة 🚪</button>
+      </div>
+      <div class="card">
+        <h2>📊 الإدارة</h2>
+        <p>تقارير ذكية، سجل كامل، إدارة العملاء والموردين والحجوزات والديون.</p>
+        <button class="btn btn-ghost" onclick="selectRole('admin')">فتح التقارير 🚪</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function initializeRoleHeader(role) {
+      sessionStorage.setItem('userRole', role);
+      const originalFetch = window.fetch;
+      window.fetch = function(...args) {
+        const [resource, config] = args;
+        const newConfig = config || {};
+        newConfig.headers = newConfig.headers || {};
+        newConfig.headers['X-User-Role'] = role;
+        return originalFetch.call(this, resource, newConfig);
+      };
+    }
+
+    function selectRole(role) {
+      initializeRoleHeader(role);
+      const pages = { cashier: 'cashier.html', baker: 'kitchen.html', packer: 'packaging.html', admin: 'management.html' };
+      window.location.href = pages[role] || 'roles.html';
+    }
+
+    const storedRole = sessionStorage.getItem('userRole');
+    if (storedRole) initializeRoleHeader(storedRole);
+  </script>
+</body>
+</html>

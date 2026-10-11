@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>الإدارة المتقدمة — نظام المخبز</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    body{background:#fcfaf7;}
+    .wrap{max-width:1200px;margin:0 auto;padding:16px;display:grid;gap:14px;}
+    .card{background:#fff;border-radius:16px;padding:16px;box-shadow:0 6px 20px rgba(43,33,24,0.08);}
+    .card h2{margin:0 0 10px;font-size:16px;display:flex;align-items:center;gap:6px;}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;}
+    .list{display:grid;gap:8px;}
+    input,select,textarea{width:100%;padding:9px 10px;border:1px solid #ddd;border-radius:10px;margin-top:6px;}
+    .row{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;}
+    .small{font-size:13px;color:#7b6d5c;}
+    .btn-view-order{background:#C8553D;color:white;border:none;border-radius:8px;padding:6px 14px;font-size:12px;font-weight:bold;cursor:pointer;transition:all 0.2s;}
+    .btn-view-order:hover{background:#a8432e;}
+    .mgmt-item{padding:10px 12px;background:#fcfaf7;border-radius:12px;border:1px solid #f0ede8;display:flex;justify-content:space-between;align-items:center;gap:8px;}
+    .mgmt-item .info{flex:1;min-width:0;}
+    .mgmt-item .info .name{font-weight:bold;font-size:14px;}
+    .mgmt-item .info .sub{font-size:12px;color:#7b6d5c;}
+    .mgmt-item .actions{display:flex;gap:6px;flex-shrink:0;align-items:center;}
+    .toggle-btn{background:none;border:none;color:#C8553D;font-size:13px;font-weight:bold;cursor:pointer;padding:8px 0;width:100%;text-align:center;transition:all 0.2s;border-radius:8px;}
+    .toggle-btn:hover{background:#f5f0ea;}
+    .debt-badge{display:inline-block;background:#ffebee;color:#b71c1c;border-radius:999px;padding:2px 10px;font-size:12px;font-weight:bold;}
+    .clear-debt-btn{background:#27ae60;color:white;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:bold;cursor:pointer;transition:all 0.2s;}
+    .clear-debt-btn:hover{background:#1e8449;}
+    .clear-debt-btn:disabled{opacity:0.5;cursor:not-allowed;}
+    .clear-debt-form{display:flex;gap:6px;align-items:center;}
+    .clear-debt-form input{width:80px;padding:4px 6px;border:1px solid #ddd;border-radius:6px;font-size:12px;margin:0;text-align:center;}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h2>📈 ملخص مالي سريع</h2>
+      <div class="grid" id="summary"></div>
+    </div>
+    <div class="card" id="auditCard">
+      <h2>🧾 السجل الكامل</h2>
+      <input id="auditSearch" placeholder="🔍 بحث في السجل..." />
+      <div class="list" id="auditList"></div>
+      <button class="toggle-btn" id="auditToggleBtn" onclick="toggleSection('audit')" style="display:none;">
+        <span id="auditToggleText">عرض الكل</span><span class="arrow" style="font-size:11px;margin-right:4px;" id="auditToggleArrow">▼</span>
+      </button>
+    </div>
+    <div class="card" id="customersCard">
+      <h2>🧑‍🤝‍🧑 العملاء والديون</h2>
+      <div class="list" id="customersList"></div>
+      <button class="toggle-btn" id="customersToggleBtn" onclick="toggleSection('customers')" style="display:none;">
+        <span id="customersToggleText">عرض الكل</span><span class="arrow" style="font-size:11px;margin-right:4px;" id="customersToggleArrow">▼</span>
+      </button>
+    </div>
+    <div class="card" id="reservationsCard">
+      <h2>📦 الحجوزات</h2>
+      <div class="list" id="reservationsList"></div>
+      <button class="toggle-btn" id="reservationsToggleBtn" onclick="toggleSection('reservations')" style="display:none;">
+        <span id="reservationsToggleText">عرض الكل</span><span class="arrow" style="font-size:11px;margin-right:4px;" id="reservationsToggleArrow">▼</span>
+      </button>
+    </div>
+    <div class="card" id="suppliersCard">
+      <h2>🏭 الموردون والمصروفات</h2>
+      <div class="list" id="suppliersList"></div>
+      <button class="toggle-btn" id="suppliersToggleBtn" onclick="toggleSection('suppliers')" style="display:none;">
+        <span id="suppliersToggleText">عرض الكل</span><span class="arrow" style="font-size:11px;margin-right:4px;" id="suppliersToggleArrow">▼</span>
+      </button>
+    </div>
+  </div>
+  <script>
+    const sectionState = {};
+    const DEFAULT_SHOW = 5;
+
+    function toggleSection(name){
+      sectionState[name] = !sectionState[name];
+      if (name === 'audit') renderAudit();
+      else if (name === 'customers') renderCustomers();
+      else if (name === 'reservations') renderReservations();
+      else if (name === 'suppliers') renderSuppliers();
+    }
+
+    function applyToggle(name, totalItems){
+      const btn = document.getElementById(name + 'ToggleBtn');
+      const text = document.getElementById(name + 'ToggleText');
+      const arrow = document.getElementById(name + 'ToggleArrow');
+      if (totalItems <= DEFAULT_SHOW){ btn.style.display = 'none'; return; }
+      btn.style.display = 'block';
+      if (sectionState[name]){ text.textContent = 'إخفاء'; arrow.textContent = '▲'; }
+      else { text.textContent = 'عرض الكل (' + totalItems + ')'; arrow.textContent = '▼'; }
+    }
+
+    function getVisibleItems(name, items){
+      if (sectionState[name]) return items;
+      return items.slice(0, DEFAULT_SHOW);
+    }
+
+    // ============== الملخص ==============
+    async function loadSummary(){
+      const res = await fetch('/api/finance-summary');
+      const data = await res.json();
+      document.getElementById('summary').innerHTML = `
+        <div class="card"><strong>💰 الإيرادات</strong><div style="font-size:18px;font-weight:bold;color:#27ae60;">${Number(data.revenue||0).toFixed(2)} ₪</div></div>
+        <div class="card"><strong>💸 المصروفات</strong><div style="font-size:18px;font-weight:bold;color:#c0392b;">${Number(data.expenses||0).toFixed(2)} ₪</div></div>
+        <div class="card"><strong>📊 الصافي</strong><div style="font-size:18px;font-weight:bold;color:${data.net >= 0 ? '#27ae60' : '#c0392b'};">${Number(data.net||0).toFixed(2)} ₪</div></div>
+        <div class="card"><strong>🧾 ديون العملاء</strong><div style="font-size:18px;font-weight:bold;color:#e67e22;">${Number(data.customerDebt||0).toFixed(2)} ₪</div></div>`;
+    }
+
+    // ============== السجل الكامل ==============
+    let auditRows = [];
+
+    function formatAuditValue(val){
+      if (!val) return '—';
+      try {
+        const obj = typeof val === 'string' ? JSON.parse(val) : val;
+        if (typeof obj === 'object') return Object.entries(obj).map(([k, v]) => k + ': ' + v).join(' | ');
+        return String(obj);
+      } catch(e){ return String(val); }
+    }
+
+    function getAuditActionLabel(action){
+      const map = { 'created': '🆕 إنشاء', 'updated': '✏️ تعديل', 'deleted': '🗑️ حذف',
+        'status_change': '🔄 تغيير حالة', 'payment_update': '💰 تحديث دفع',
+        'payment_received': '💵 استلام دفعة', 'order_created': '🆕 طلبية جديدة' };
+      return map[action] || '📝 ' + action;
+    }
+
+    function renderAudit(){
+      const list = document.getElementById('auditList');
+      const search = document.getElementById('auditSearch').value;
+      const filtered = search ? auditRows.filter(r => JSON.stringify(r).includes(search)) : auditRows;
+      const total = filtered.length;
+      const visible = search ? filtered : getVisibleItems('audit', filtered);
+
+      if (total === 0){ list.innerHTML = '<div class="small" style="padding:10px;text-align:center;">لا توجد سجلات</div>'; applyToggle('audit', 0); return; }
+
+      list.innerHTML = visible.map(row => {
+        const actionLabel = getAuditActionLabel(row.action);
+        const prevFormatted = formatAuditValue(row.previous_value);
+        const newFormatted = formatAuditValue(row.new_value);
+        const showOrderBtn = row.entity_type === 'order' && row.entity_id;
+        const idLabel = row.entity_type === 'order' && row.entity_id ? '<span style="color:var(--oven-red-deep);font-size:12px;">#' + row.entity_id + '</span>' : '';
+        const sub = (row.created_at || '') + ' · ' + (row.user || 'system') + ' · ' + row.entity_type;
+        const details = (prevFormatted !== '—' || newFormatted !== '—') ?
+          '<div class="sub" style="font-size:11px;">' +
+          (prevFormatted !== '—' ? '<span style="color:#888;">قبل:</span> ' + prevFormatted : '') + ' ' +
+          (newFormatted !== '—' ? '<span style="color:#888;">بعد:</span> ' + newFormatted : '') + '</div>' : '';
+        const btnHtml = showOrderBtn ? '<button class="btn-view-order" onclick="viewOrderFromAudit(' + row.entity_id + ')">🔍 عرض</button>' : '';
+        return '<div class="mgmt-item"><div class="info"><div class="name">' + actionLabel + ' ' + idLabel +
+          '</div><div class="sub">' + sub + '</div>' + details +
+          '</div><div class="actions">' + btnHtml + '</div></div>';
+      }).join('');
+      applyToggle('audit', total);
+    }
+
+    async function loadAudit(){
+      const search = document.getElementById('auditSearch').value;
+      const res = await fetch('/api/audit-logs?search=' + encodeURIComponent(search));
+      auditRows = await res.json();
+      renderAudit();
+    }
+
+    async function viewOrderFromAudit(orderId){
+      // Open the reports page with the order detail modal
+      window.location.href = `/reports.html?viewOrder=${orderId}`;
+    }
+
+    // Check if we came from management to view a specific order
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const viewOrder = params.get('viewOrder');
+      if (viewOrder) {
+        document.getElementById('auditSearch').value = viewOrder;
+        loadAudit();
+      }
+    })();
+    // ============== العملاء والديون ==============
+    let customersRows = [];
+
+    async function loadCustomers(){
+      const res = await fetch('/api/customers');
+      customersRows = await res.json();
+      renderCustomers();
+    }
+
+    async function clearDebt(customerId, amount, btnEl){
+      if (!amount || amount <= 0){ alert('الرجاء إدخال مبلغ صحيح'); return; }
+      btnEl.disabled = true;
+      btnEl.textContent = '⏳';
+      try {
+        const res = await fetch('/api/customers/' + customerId + '/payment', {
+          method: 'POST', headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ amount: parseFloat(amount), notes: 'مسح دين', user: 'admin' })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        await loadCustomers();
+      } catch(e){
+        alert('❌ فشل مسح الدين: ' + e.message);
+        btnEl.disabled = false;
+        btnEl.textContent = '💰 مسح';
+      }
+    }
+
+    function renderCustomers(){
+      const list = document.getElementById('customersList');
+      const total = customersRows.length;
+      const visible = getVisibleItems('customers', customersRows);
+      if (total === 0){ list.innerHTML = '<div class="small" style="padding:10px;text-align:center;">لا يوجد عملاء</div>'; applyToggle('customers', 0); return; }
+
+      list.innerHTML = visible.map(function(c){
+        const debt = Number(c.balance_total || 0);
+        return '<div class="mgmt-item"><div class="info"><div class="name">' + c.name + '</div><div class="sub">' +
+          (debt > 0 ? '<span class="debt-badge">دين: ' + debt.toFixed(2) + ' ₪</span>' : '✅ لا توجد ديون') +
+          '</div></div><div class="actions">' +
+          (debt > 0 ? '<div class="clear-debt-form"><input type="number" id="debtAmount_' + c.id + '" value="' + debt.toFixed(2) + '" step="0.01" min="0.01" />' +
+          '<button class="clear-debt-btn" onclick="clearDebt(' + c.id + ', document.getElementById(\'debtAmount_' + c.id + '\').value, this)">💰 مسح</button></div>' : '') +
+          '</div></div>';
+      }).join('');
+      applyToggle('customers', total);
+    }
+
+    // ============== الحجوزات ==============
+    let reservationsRows = [];
+
+    async function loadReservations(){
+      const res = await fetch('/api/reservations');
+      reservationsRows = await res.json();
+      renderReservations();
+    }
+
+    function renderReservations(){
+      const list = document.getElementById('reservationsList');
+      const total = reservationsRows.length;
+      const visible = getVisibleItems('reservations', reservationsRows);
+      const statusMap = {'reserved':'🔒 محجوز','completed':'✅ مكتمل','cancelled':'❌ ملغي'};
+      if (total === 0){ list.innerHTML = '<div class="small" style="padding:10px;text-align:center;">لا توجد حجوزات</div>'; applyToggle('reservations', 0); return; }
+
+      list.innerHTML = visible.map(function(r){
+        return '<div class="mgmt-item"><div class="info"><div class="name">' + r.customer_name + '</div><div class="sub">' +
+          r.product_name + ' × ' + r.quantity + ' · ' + r.pickup_date + (r.pickup_time ? ' ' + r.pickup_time : '') + ' · ' + (statusMap[r.status] || r.status) + '</div></div></div>';
+      }).join('');
+      applyToggle('reservations', total);
+    }
+
+    // ============== الموردون والمصروفات ==============
+    let suppliersRows = [];
+
+    async function loadSuppliers(){
+      const res = await fetch('/api/suppliers');
+      suppliersRows = await res.json();
+      renderSuppliers();
+    }
+
+    function renderSuppliers(){
+      const list = document.getElementById('suppliersList');
+      const total = suppliersRows.length;
+      const visible = getVisibleItems('suppliers', suppliersRows);
+      if (total === 0){ list.innerHTML = '<div class="small" style="padding:10px;text-align:center;">لا يوجد موردون</div>'; applyToggle('suppliers', 0); return; }
+
+      list.innerHTML = visible.map(function(s){
+        const balance = Number(s.balance || 0);
+        return '<div class="mgmt-item"><div class="info"><div class="name">' + s.name + '</div><div class="sub">' +
+          (s.contact_person ? s.contact_person + ' · ' : '') + (s.phone || '') + ' · الرصيد: ' + balance.toFixed(2) + ' ₪</div></div></div>';
+      }).join('');
+      applyToggle('suppliers', total);
+    }
+
+    // ============== ربط الأحداث ==============
+    document.getElementById('auditSearch').addEventListener('input', loadAudit);
+    (function(){
+      const params = new URLSearchParams(window.location.search);
+      const viewOrder = params.get('viewOrder');
+      if (viewOrder) { document.getElementById('auditSearch').value = viewOrder; loadAudit(); }
+    })();
+    loadSummary(); loadAudit(); loadCustomers(); loadReservations(); loadSuppliers();
+  </script>
+</body>
+</html>

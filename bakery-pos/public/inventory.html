@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>المخزون — نظام المخبز</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="inventory.css" />
+</head>
+<body>
+  <div class="topbar">
+    <h1>📦 المخزون (دخول/خروج/تكلفة)</h1>
+    <div style="display:flex; gap:10px;">
+      <a href="roles.html" class="btn btn-ghost">🧭 الأدوار</a>
+      <a href="management.html" class="btn btn-ghost">🛠️ الإدارة</a>
+      <a href="cashier.html" class="btn btn-ghost">🧾 الكاشير</a>
+    </div>
+  </div>
+
+  <div class="wrap">
+
+    <div class="card">
+      <h2>➕ إضافة / تعديل مادة</h2>
+      <div class="row">
+        <div>
+          <label>اسم المادة</label>
+          <input type="text" id="itemName" placeholder="مثال: جبنة صفراء" />
+        </div>
+        <div>
+          <label>الوحدة</label>
+          <input type="text" id="itemUnit" placeholder="مثال: كغ / قطعة / كرتون" value="قطعة" />
+        </div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:10px;">
+        <button class="btn btn-primary" id="addItemBtn" style="flex:1;">إضافة</button>
+        <button class="btn btn-secondary" id="toggleItemBtn" style="flex:1;">تفعيل/إيقاف</button>
+      </div>
+      <div class="small" style="margin-top:8px;">ملاحظة: الإيقاف يخلي المادة غير متاحة بدون حذف.</div>
+    </div>
+
+    <div class="card">
+      <h2>📥 دخول (اشتريت / استلمت)</h2>
+      <div class="row">
+        <div>
+          <label>المادة</label>
+          <select id="entryItemSelect"></select>
+        </div>
+        <div>
+          <label>المورد (اختياري)</label>
+          <select id="entrySupplierSelect"></select>
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>الكمية دخلت</label>
+          <input type="number" step="0.01" min="0" id="entryQty" />
+        </div>
+        <div>
+          <label>تكلفة الوحدة (اختياري)</label>
+          <input type="number" step="0.01" min="0" id="entryUnitCost" />
+        </div>
+      </div>
+      <div>
+        <label>ملاحظات</label>
+        <input type="text" id="entryNotes" placeholder="مثال: دفعة أولى" />
+      </div>
+      <button class="btn btn-primary" id="addEntryBtn" style="width:100%; margin-top:10px;">تسجيل الدخول</button>
+    </div>
+
+    <div class="card">
+      <h2>📤 خروج/صرف (هدر/استهلاك)</h2>
+      <div class="row">
+        <div>
+          <label>المادة</label>
+          <select id="exitItemSelect"></select>
+        </div>
+        <div>
+          <label>السبب/النوع</label>
+          <input type="text" id="exitReason" placeholder="مثال: صرف على الإنتاج / هدر" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>الكمية خرجت</label>
+          <input type="number" step="0.01" min="0" id="exitQty" />
+        </div>
+        <div>
+          <label>ملاحظات</label>
+          <input type="text" id="exitNotes" placeholder="اختياري" />
+        </div>
+      </div>
+      <button class="btn btn-primary" id="addExitBtn" style="width:100%; margin-top:10px;">تسجيل الخروج</button>
+    </div>
+
+    <div class="card">
+      <h2>📋 المواد الحالية</h2>
+      <div class="small">الرصيد = مجموع الدخول - مجموع الخروج</div>
+      <table class="table">
+        <thead>
+          <tr><th>المادة</th><th>الرصيد</th><th>الوحدة</th><th>حالة</th><th>اختيار</th></tr>
+        </thead>
+        <tbody id="itemsTableBody"></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <h2>🧾 آخر الحركات</h2>
+      <div class="small">دخول وخروج (آخر 50)</div>
+      <table class="table">
+        <thead>
+          <tr><th>التاريخ</th><th>نوع</th><th>المادة</th><th>الكمية</th><th>تفاصيل</th></tr>
+        </thead>
+        <tbody id="movementsBody"></tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <div class="toast-wrap" id="toastWrap"></div>
+
+  <script src="/inventory.js"></script>
+</body>
+</html>
+

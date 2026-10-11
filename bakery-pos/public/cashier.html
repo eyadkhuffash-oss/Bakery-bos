@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no">
+<title>الكاشير — نظام المخبز</title>
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="cashier.css">
+</head>
+<body>
+
+<div class="topbar">
+  <h1>🍞 الكاشير</h1>
+  <div style="display:flex; align-items:center; gap:10px;">
+    <span class="pill" id="clock">--:--</span>
+    <span class="pill" id="connStatus" style="background:#ffe3da;">⏳ يتصل...</span>
+    <a href="admin.html" class="btn btn-ghost">⚙️ المنتجات</a>
+    <a href="reports.html" class="btn btn-ghost">📊 التقارير</a>
+  </div>
+</div>
+
+<div class="layout">
+
+  <!-- يمين: شبكة المنتجات -->
+  <div class="products-pane">
+    <div class="tabs">
+      <button class="tab active" data-cat="all">الكل</button>
+      <button class="tab" data-cat="bread">🍞 خبز</button>
+      <button class="tab" data-cat="pastry">🥐 معجنات</button>
+    </div>
+    <div class="grid" id="productGrid"></div>
+  </div>
+
+  <!-- يسار: السلة -->
+  <div class="cart-pane">
+    <div class="cart-header">
+      <h2>الطلبية الحالية</h2>
+      <button class="btn btn-ghost btn-sm" id="clearCartBtn">مسح الكل</button>
+    </div>
+
+    <div class="cart-list" id="cartList">
+      <div class="empty-cart">اضغط على أي صنف لإضافته 👆</div>
+    </div>
+
+    <textarea id="notesInput" placeholder="ملاحظات على الطلبية (اختياري)..." rows="2"></textarea>
+
+    <div class="cart-total">
+      <span>الإجمالي</span>
+      <span id="cartTotal">0.00 ₪</span>
+    </div>
+
+    <button class="btn btn-primary btn-send" id="sendOrderBtn" disabled>إرسال الطلبية 🚀</button>
+
+    <div class="open-orders" id="openOrders">
+      <h3>طلبيات مفتوحة</h3>
+      <div id="openOrdersList" class="open-orders-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- نافذة إدخال كمية يدوي -->
+<div class="modal-overlay" id="qtyModal">
+  <div class="modal">
+    <h3 id="qtyModalTitle">تحديد الكمية</h3>
+    <input type="number" id="qtyModalInput" min="0" inputmode="numeric">
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="qtyModalCancel">إلغاء</button>
+      <button class="btn btn-primary" id="qtyModalOk">تأكيد</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="sounds.js"></script>
+<script src="cashier.js"></script>
+</body>
+</html>
